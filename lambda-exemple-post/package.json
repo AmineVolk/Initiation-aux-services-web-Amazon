@@ -1,0 +1,22 @@
+{
+  "name": "lambda-exemple-post",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha --timeout 30000 test/**"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.0.2",
+    "supertest": "^4.0.2"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.432.0"
+  }
+}
