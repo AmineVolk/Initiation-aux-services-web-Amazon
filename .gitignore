@@ -1,0 +1,6 @@
+
+\.DS_Store
+
+\.vscode/launch\.json
+
+serverless-output\.yaml
