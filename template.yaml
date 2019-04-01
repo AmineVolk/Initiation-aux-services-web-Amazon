@@ -1,0 +1,97 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  eaprofile
+  Sample SAM Template
+Globals:
+  Function:
+    Timeout: 30
+
+Resources:
+  ApiGatewayExample:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      DefinitionBody:
+        swagger: "2.0"
+        info:
+          title:
+            Ref: AWS::StackName
+          description: My API getway exapmle
+          version: 1.0.0
+        paths:
+          /user/{user}:
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: post
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaExampleGet.Arn}/invocations
+          /user:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: post
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaExamplePost.Arn}/invocations
+
+  LambdaExampleGet:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs8.10
+      Handler: index.lambdaHandler
+      CodeUri: lambda-exemple-get
+      FunctionName: LambdaExampleGet
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref ExampleTable
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonDynamoDBReadOnlyAccess 
+
+  LambdaExamplePost:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs8.10
+      Handler: index.lambdaHandler
+      CodeUri: lambda-exemple-post/
+      FunctionName: LambdaExamplePost
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref ExampleTable
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonDynamoDBFullAccess
+
+  ExampleTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+
+  ConfigLambdaPermissionForApiGetwayToInvokeLambdaExampleGet:
+    Type: "AWS::Lambda::Permission"
+    DependsOn:
+      - ApiGatewayExample
+      - LambdaExampleGet
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaExampleGet
+      Principal: apigateway.amazonaws.com
+
+  ConfigLambdaPermissionForApiGetwayToInvokeLambdaExamplePost:
+    Type: "AWS::Lambda::Permission"
+    DependsOn:
+      - ApiGatewayExample
+      - LambdaExamplePost
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaExamplePost
+      Principal: apigateway.amazonaws.com
